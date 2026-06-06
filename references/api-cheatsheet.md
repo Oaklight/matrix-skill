@@ -74,6 +74,17 @@ Message body for `m.room.message`:
 
 Other msgtypes: `m.notice` (bot output), `m.emote` (/me), `m.image`, `m.file`, `m.video`, `m.audio`.
 
+## Replies & Threads
+
+| Action | Method | Endpoint |
+|--------|--------|----------|
+| Reply to message | PUT | `/rooms/{roomId}/send/m.room.message/{txnId}` |
+| Thread reply | PUT | `/rooms/{roomId}/send/m.room.message/{txnId}` |
+
+Both use the standard send endpoint. The difference is in the body:
+- **Reply**: `"m.relates_to": {"m.in_reply_to": {"event_id": "$evt"}}` — include fallback quote in `body`
+- **Thread**: `"m.relates_to": {"rel_type": "m.thread", "event_id": "$root", ...}`
+
 ## Reactions
 
 | Action | Method | Endpoint |

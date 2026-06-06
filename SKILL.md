@@ -271,6 +271,83 @@ curl -s -H "Authorization: Bearer $TOKEN" \
 
 To resolve room IDs to names, loop and fetch `m.room.name` state for each.
 
+## Replies
+
+To reply to a specific message, add `m.relates_to` with `m.in_reply_to`. The plain-text `body` **must** include the fallback quote prefix — clients that don't render rich replies use it to show context:
+
+```bash
+TXN="reply-$(date +%s%N)"
+BODY=$(jq -n \
+  --arg eid "$EVENT_ID" \
+  --arg sender "@alice:example.com" \
+  --arg orig "original message text" \
+  --arg reply "My reply here" '{
+  msgtype: "m.text",
+  body: "> <\($sender)> \($orig)\n\n\($reply)",
+  format: "org.matrix.custom.html",
+  formatted_body: "<mx-reply><blockquote><a href=\"https://matrix.to/#/!roomid:example.com/\($eid)\">In reply to</a> <a href=\"https://matrix.to/#/\($sender)\">\($sender)</a><br>\($orig)</blockquote></mx-reply>\($reply)",
+  "m.relates_to": {
+    "m.in_reply_to": {
+      event_id: $eid
+    }
+  }
+}')
+curl -s -X PUT \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "$BODY" \
+  "$HS/_matrix/client/v3/rooms/$ENC/send/m.room.message/$TXN"
+```
+
+**Fallback body format**: `> <@user:server> original text` followed by a blank line and the reply. Omitting this is the most common agent mistake — the reply will appear orphaned in clients that don't parse `m.relates_to`.
+
+## Threads
+
+Threads use `rel_type: "m.thread"`. The `event_id` points to the **root** event of the thread (the first message), not the message you're replying to within the thread:
+
+```bash
+TXN="thread-$(date +%s%N)"
+BODY=$(jq -n \
+  --arg root "$THREAD_ROOT_EVENT_ID" \
+  --arg msg "Thread reply" '{
+  msgtype: "m.text",
+  body: $msg,
+  "m.relates_to": {
+    rel_type: "m.thread",
+    event_id: $root,
+    is_falling_back: true,
+    "m.in_reply_to": {
+      event_id: $root
+    }
+  }
+}')
+curl -s -X PUT \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "$BODY" \
+  "$HS/_matrix/client/v3/rooms/$ENC/send/m.room.message/$TXN"
+```
+
+To reply to a **specific message within a thread**, keep `event_id` as the thread root but set `m.in_reply_to.event_id` to the target message:
+
+```bash
+BODY=$(jq -n \
+  --arg root "$THREAD_ROOT_EVENT_ID" \
+  --arg target "$TARGET_EVENT_ID" \
+  --arg msg "Reply to a specific message in thread" '{
+  msgtype: "m.text",
+  body: $msg,
+  "m.relates_to": {
+    rel_type: "m.thread",
+    event_id: $root,
+    is_falling_back: false,
+    "m.in_reply_to": {
+      event_id: $target
+    }
+  }
+}')
+```
+
 ## Reactions
 
 ```bash
