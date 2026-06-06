@@ -1,6 +1,8 @@
 # matrix-skill
 
-An [OpenClaw](https://github.com/openclaw/openclaw) skill for operating [Matrix](https://matrix.org) homeservers via the standard Client-Server API.
+[中文版](README_zh.md)
+
+An [OpenClaw](https://github.com/openclaw/openclaw) / [Claude Code](https://code.claude.com) skill for operating [Matrix](https://matrix.org) homeservers via the standard Client-Server API.
 
 ## What it does
 
@@ -37,20 +39,48 @@ Does **not** cover server-specific admin APIs (`/_synapse/admin/`, `/_conduit/`,
 
 ## Installation
 
+### OpenClaw
+
 ```bash
 # From ClawHub
 openclaw skills install matrix
 
 # From source
 git clone https://github.com/Oaklight/matrix-skill.git
-cp -r matrix-skill ~/.openclaw/skills/matrix
+cp -r matrix-skill ~/.openclaw/plugin-skills/matrix
 ```
+
+### Claude Code
+
+This skill follows the [Agent Skills](https://agentskills.io) open standard and works natively with Claude Code.
+
+```bash
+# Personal skill (available across all projects)
+git clone https://github.com/Oaklight/matrix-skill.git
+cp -r matrix-skill ~/.claude/skills/matrix
+
+# Project skill (scoped to one repo)
+mkdir -p .claude/skills
+cp -r matrix-skill .claude/skills/matrix
+```
+
+Once installed, Claude Code will auto-load the skill when Matrix operations are relevant, or you can invoke it directly with `/matrix`.
 
 ## Prerequisites
 
 - `curl` and `jq` (standard on most systems)
 - A Matrix access token
 - Network access to your homeserver
+
+## Compatibility
+
+| Platform | Status | Install path |
+|----------|--------|-------------|
+| **OpenClaw** | ✅ Full support | `~/.openclaw/plugin-skills/matrix/` |
+| **Claude Code** | ✅ Full support | `~/.claude/skills/matrix/` or `.claude/skills/matrix/` |
+| **Any SKILL.md agent** | ✅ Compatible | Follows [Agent Skills](https://agentskills.io) open standard |
+
+The SKILL.md frontmatter includes both OpenClaw-specific metadata and standard fields. Platforms ignore unknown fields gracefully.
 
 ## File structure
 

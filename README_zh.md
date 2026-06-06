@@ -1,6 +1,8 @@
 # matrix-skill
 
-一个 [OpenClaw](https://github.com/openclaw/openclaw) 技能，用于通过标准 Client-Server API 操作 [Matrix](https://matrix.org) 服务器。
+[English](README_en.md)
+
+一个 [OpenClaw](https://github.com/openclaw/openclaw) / [Claude Code](https://code.claude.com) 技能，用于通过标准 Client-Server API 操作 [Matrix](https://matrix.org) 服务器。
 
 ## 功能
 
@@ -37,20 +39,48 @@ OpenClaw 内置的 Matrix channel 会把消息 *路由到* agent session — 由
 
 ## 安装
 
+### OpenClaw
+
 ```bash
 # 从 ClawHub
 openclaw skills install matrix
 
 # 从源码
 git clone https://github.com/Oaklight/matrix-skill.git
-cp -r matrix-skill ~/.openclaw/skills/matrix
+cp -r matrix-skill ~/.openclaw/plugin-skills/matrix
 ```
+
+### Claude Code
+
+本 skill 遵循 [Agent Skills](https://agentskills.io) 开放标准，原生支持 Claude Code。
+
+```bash
+# 个人 skill（所有项目可用）
+git clone https://github.com/Oaklight/matrix-skill.git
+cp -r matrix-skill ~/.claude/skills/matrix
+
+# 项目 skill（仅当前 repo）
+mkdir -p .claude/skills
+cp -r matrix-skill .claude/skills/matrix
+```
+
+安装后，Claude Code 会在需要 Matrix 操作时自动加载，或者直接用 `/matrix` 调用。
 
 ## 前置条件
 
 - `curl` 和 `jq`（大多数系统自带）
 - Matrix access token
 - 能访问你的 homeserver
+
+## 兼容性
+
+| 平台 | 状态 | 安装路径 |
+|------|------|----------|
+| **OpenClaw** | ✅ 完全支持 | `~/.openclaw/plugin-skills/matrix/` |
+| **Claude Code** | ✅ 完全支持 | `~/.claude/skills/matrix/` 或 `.claude/skills/matrix/` |
+| **其他 SKILL.md agent** | ✅ 兼容 | 遵循 [Agent Skills](https://agentskills.io) 开放标准 |
+
+SKILL.md frontmatter 包含 OpenClaw 特有元数据和标准字段，各平台会自动忽略不识别的字段。
 
 ## 文件结构
 
