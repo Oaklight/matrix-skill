@@ -30,6 +30,21 @@ This skill covers the **standard Client-Server API** (spec.matrix.org). It works
 2. An access token for your Matrix account
 3. `curl` and `jq` available in PATH
 
+If `jq` is not installed, use the bundled installer (no root required):
+
+```bash
+bash scripts/install-jq.sh           # installs to ~/.local/bin/jq
+bash scripts/install-jq.sh ./bin      # or a custom directory
+export PATH="$HOME/.local/bin:$PATH"  # ensure it's in PATH
+```
+
+For China mainland users with slow GitHub access, set a mirror before running:
+
+```bash
+export DOWNLOAD_URL="https://ghfast.top/https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-$(uname -s | tr A-Z a-z)-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')"
+bash scripts/install-jq.sh
+```
+
 ## Auth & Config
 
 The skill expects two values — locate them from your environment:

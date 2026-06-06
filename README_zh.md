@@ -68,9 +68,31 @@ cp -r matrix-skill .claude/skills/matrix
 
 ## 前置条件
 
-- `curl` 和 `jq`（大多数系统自带）
+- `curl`（所有系统自带）
+- `jq` — JSON 处理器（[jqlang.org](https://jqlang.org)）
 - Matrix access token
 - 能访问你的 homeserver
+
+### 安装 jq
+
+`jq` 是一个静态二进制，不需要 root 权限：
+
+```bash
+# 使用附带的安装脚本
+bash scripts/install-jq.sh
+
+# 或通过包管理器
+apt install jq        # Debian/Ubuntu
+brew install jq       # macOS
+pacman -S jq          # Arch
+```
+
+🇨🇳 **中国大陆用户**：如果 GitHub 下载慢，设置镜像后再跑：
+
+```bash
+export DOWNLOAD_URL="https://ghfast.top/https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-$(uname -s | tr A-Z a-z)-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')"
+bash scripts/install-jq.sh
+```
 
 ## 兼容性
 
@@ -91,9 +113,21 @@ matrix-skill/
 │   ├── api-cheatsheet.md             # API 端点速查
 │   ├── room-management.md            # 房间管理模式与权限
 │   └── troubleshooting.md            # 常见错误与解决
+├── scripts/
+│   └── install-jq.sh                 # 本地 jq 安装器（不需 root）
 ├── README.md → README_en.md
 ├── README_en.md
 └── README_zh.md
+```
+
+### 原始文件访问（jsdelivr CDN 加速）
+
+中国大陆用户可用 jsdelivr CDN 加速访问：
+
+```
+https://cdn.jsdelivr.net/gh/Oaklight/matrix-skill@master/SKILL.md
+https://cdn.jsdelivr.net/gh/Oaklight/matrix-skill@master/references/api-cheatsheet.md
+https://cdn.jsdelivr.net/gh/Oaklight/matrix-skill@master/scripts/install-jq.sh
 ```
 
 ## 许可证

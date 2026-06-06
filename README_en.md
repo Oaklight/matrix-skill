@@ -68,9 +68,31 @@ Once installed, Claude Code will auto-load the skill when Matrix operations are 
 
 ## Prerequisites
 
-- `curl` and `jq` (standard on most systems)
+- `curl` (standard on all systems)
+- `jq` — JSON processor ([jqlang.org](https://jqlang.org))
 - A Matrix access token
 - Network access to your homeserver
+
+### Installing jq
+
+`jq` is a single static binary. If it's not already on your system:
+
+```bash
+# Bundled installer (no root required)
+bash scripts/install-jq.sh
+
+# Or via package manager
+apt install jq        # Debian/Ubuntu
+brew install jq       # macOS
+pacman -S jq          # Arch
+```
+
+🇨🇳 **China mainland users**: if GitHub downloads are slow, set a mirror:
+
+```bash
+export DOWNLOAD_URL="https://ghfast.top/https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-$(uname -s | tr A-Z a-z)-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')"
+bash scripts/install-jq.sh
+```
 
 ## Compatibility
 
@@ -91,9 +113,21 @@ matrix-skill/
 │   ├── api-cheatsheet.md             # Endpoint quick reference
 │   ├── room-management.md            # Room patterns & power levels
 │   └── troubleshooting.md            # Common errors & fixes
+├── scripts/
+│   └── install-jq.sh                 # Local jq installer (no root)
 ├── README.md → README_en.md
 ├── README_en.md
 └── README_zh.md
+```
+
+### Raw file access (jsdelivr CDN)
+
+For faster access in China mainland, use jsdelivr-proxied URLs:
+
+```
+https://cdn.jsdelivr.net/gh/Oaklight/matrix-skill@master/SKILL.md
+https://cdn.jsdelivr.net/gh/Oaklight/matrix-skill@master/references/api-cheatsheet.md
+https://cdn.jsdelivr.net/gh/Oaklight/matrix-skill@master/scripts/install-jq.sh
 ```
 
 ## License
