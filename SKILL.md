@@ -1,5 +1,6 @@
 ---
 name: matrix
+version: 1.0.0
 description: "Matrix Client-Server API via curl: send messages, create/manage rooms, invite members, set power levels, read history, and query room state. Works with any spec-compliant homeserver."
 homepage: https://github.com/Oaklight/matrix-skill
 metadata:
