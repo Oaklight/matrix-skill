@@ -78,7 +78,7 @@ Once installed, Claude Code will auto-load the skill when Matrix operations are 
 `jq` is a single static binary. If it's not already on your system:
 
 ```bash
-# Bundled installer (no root required)
+# Bundled installer (no root required, CDN-accelerated by default)
 bash scripts/install-jq.sh
 
 # Or via package manager
@@ -87,11 +87,10 @@ brew install jq       # macOS
 pacman -S jq          # Arch
 ```
 
-🇨🇳 **China mainland users**: if GitHub downloads are slow, set a mirror:
+The installer defaults to [ghfast.top](https://ghfast.top) CDN proxy for fast downloads globally. To use direct GitHub instead:
 
 ```bash
-export DOWNLOAD_URL="https://ghfast.top/https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-$(uname -s | tr A-Z a-z)-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')"
-bash scripts/install-jq.sh
+DOWNLOAD_URL="https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-$(uname -s | tr A-Z a-z)-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')" bash scripts/install-jq.sh
 ```
 
 ## Compatibility

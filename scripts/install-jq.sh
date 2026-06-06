@@ -29,12 +29,18 @@ esac
 BINARY="jq-${PLATFORM}-${ARCH_SUFFIX}"
 GITHUB_URL="https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/${BINARY}"
 
-# Mirror options for users in China mainland
-# Uncomment one of these if GitHub is slow:
-# DOWNLOAD_URL="https://ghfast.top/${GITHUB_URL}"
-# DOWNLOAD_URL="https://gh-proxy.com/${GITHUB_URL}"
-# DOWNLOAD_URL="https://mirror.ghproxy.com/${GITHUB_URL}"
-DOWNLOAD_URL="${DOWNLOAD_URL:-$GITHUB_URL}"
+# Default: use ghfast.top CDN proxy (fast globally, especially in China mainland)
+# Override with DOWNLOAD_URL env var if you prefer a different mirror or direct GitHub.
+#
+# Note: jsdelivr cannot proxy GitHub Release assets (uploaded binaries),
+# only files tracked in git. jq binaries are Release assets, so we use
+# ghfast.top as the default CDN proxy instead.
+#
+# Examples:
+#   DOWNLOAD_URL="$GITHUB_URL"                              # direct GitHub
+#   DOWNLOAD_URL="https://gh-proxy.com/${GITHUB_URL}"       # gh-proxy
+#   DOWNLOAD_URL="https://mirror.ghproxy.com/${GITHUB_URL}"  # ghproxy mirror
+DOWNLOAD_URL="${DOWNLOAD_URL:-https://ghfast.top/${GITHUB_URL}}"
 
 mkdir -p "$INSTALL_DIR"
 

@@ -78,7 +78,7 @@ cp -r matrix-skill .claude/skills/matrix
 `jq` 是一个静态二进制，不需要 root 权限：
 
 ```bash
-# 使用附带的安装脚本
+# 使用附带的安装脚本（默认 CDN 加速，无需翻墙）
 bash scripts/install-jq.sh
 
 # 或通过包管理器
@@ -87,11 +87,10 @@ brew install jq       # macOS
 pacman -S jq          # Arch
 ```
 
-🇨🇳 **中国大陆用户**：如果 GitHub 下载慢，设置镜像后再跑：
+安装脚本默认通过 [ghfast.top](https://ghfast.top) CDN 代理下载，国内直接可用。如需直连 GitHub：
 
 ```bash
-export DOWNLOAD_URL="https://ghfast.top/https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-$(uname -s | tr A-Z a-z)-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')"
-bash scripts/install-jq.sh
+DOWNLOAD_URL="https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-$(uname -s | tr A-Z a-z)-$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/')" bash scripts/install-jq.sh
 ```
 
 ## 兼容性
