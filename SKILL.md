@@ -298,6 +298,29 @@ set -euo pipefail
 TOKEN=$(jq -r '.accessToken' ~/.openclaw/credentials/matrix/credentials.json)
 HS="https://matrix.example.com"
 
+# Retry helper: handles 429 rate limiting automatically
+matrix_put() {
+  local url="$1" data="$2" max_retries=3
+  for attempt in $(seq 1 $max_retries); do
+    resp=$(curl -s -w '\n%{http_code}' -X PUT \
+      -H "Authorization: Bearer $TOKEN" \
+      -H "Content-Type: application/json" \
+      -d "$data" "$url")
+    http_code=$(echo "$resp" | tail -1)
+    resp_body=$(echo "$resp" | sed '$d')
+    if [ "$http_code" = "429" ]; then
+      wait_ms=$(echo "$resp_body" | jq -r '.retry_after_ms // 2000')
+      echo "  ⏳ rate limited, waiting ${wait_ms}ms (attempt $attempt/$max_retries)" >&2
+      sleep "$(echo "scale=1; $wait_ms / 1000 + 0.5" | bc)"
+    else
+      echo "$resp_body"
+      return 0
+    fi
+  done
+  echo "  ❌ failed after $max_retries retries" >&2
+  return 1
+}
+
 ROOMS=("!room1:example.com" "!room2:example.com")
 MSG="Broadcast message"
 
@@ -305,11 +328,7 @@ for ROOM in "${ROOMS[@]}"; do
   ENC=$(printf '%s' "$ROOM" | jq -sRr @uri)
   TXN="batch-$(date +%s%N)"
   BODY=$(jq -n --arg msg "$MSG" '{msgtype:"m.text", body:$msg}')
-  curl -s -X PUT \
-    -H "Authorization: Bearer $TOKEN" \
-    -H "Content-Type: application/json" \
-    -d "$BODY" \
-    "$HS/_matrix/client/v3/rooms/$ENC/send/m.room.message/$TXN"
+  matrix_put "$HS/_matrix/client/v3/rooms/$ENC/send/m.room.message/$TXN" "$BODY"
   echo " → sent to $ROOM"
 done
 SCRIPT
@@ -320,6 +339,6 @@ bash /tmp/matrix_batch.sh
 
 - **Standard API only**: this skill uses the Matrix Client-Server API spec. It works identically on Synapse, Dendrite, Tuwunel/Conduit, and any compliant homeserver. Server-specific admin APIs (e.g., `/_synapse/admin/`, `/_conduit/`) are **not covered**.
 - **Idempotent sends**: PUT with the same `txnId` won't duplicate. Always generate unique txnIds for distinct messages.
-- **Rate limiting**: homeservers may return `429 Too Many Requests` with a `retry_after_ms` field. Respect it.
+- **Rate limiting**: homeservers may return `429 Too Many Requests` with a `retry_after_ms` field. The batch script pattern above includes a `matrix_put` helper that parses `retry_after_ms` and retries automatically — use it (or similar) for any multi-request workflow.
 - **Encoding**: room IDs, aliases, and user IDs in URL **paths** must be percent-encoded. In JSON **bodies** they go as-is.
 - **Power level race**: always GET current power levels before PUT — never send a partial object.
