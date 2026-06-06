@@ -89,6 +89,47 @@ BODY=$(jq -n --rawfile msg /tmp/msg.txt '{msgtype:"m.text", body:$msg}')
 
 **Transaction ID**: each `PUT /send` requires a unique `txnId` in the URL. Use `date +%s%N` or a UUID. Re-using the same txnId is idempotent (won't double-send).
 
+### Formatted messages (HTML)
+
+To send bold, links, code blocks, or other rich formatting, include `format` and `formatted_body` alongside the plain-text `body`:
+
+```bash
+TXN="msg-$(date +%s%N)"
+BODY=$(jq -n '{
+  msgtype: "m.text",
+  body: "**bold** and a link: https://example.com",
+  format: "org.matrix.custom.html",
+  formatted_body: "<strong>bold</strong> and a link: <a href=\"https://example.com\">example.com</a>"
+}')
+curl -s -X PUT \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "$BODY" \
+  "$HS/_matrix/client/v3/rooms/$ENC/send/m.room.message/$TXN"
+```
+
+The plain-text `body` is the **mandatory fallback** — clients that don't render HTML display it instead. Keep both in sync.
+
+Common HTML subset supported by most clients:
+
+- `<strong>`, `<em>`, `<del>`, `<code>`, `<pre>` — inline formatting
+- `<a href="...">` — links
+- `<blockquote>` — quotes
+- `<ol>`, `<ul>`, `<li>` — lists
+- `<br>` — line breaks (or use `<p>` blocks)
+- `<h1>`–`<h6>` — headings (limited client support)
+
+### Sending as a notice
+
+Use `m.notice` instead of `m.text` for bot/automated output. Well-behaved clients render notices with reduced prominence and don't trigger notification sounds:
+
+```bash
+BODY=$(jq -n --arg msg "Automated status update" '{
+  msgtype: "m.notice",
+  body: $msg
+}')
+```
+
 ## Read room history
 
 ```bash
