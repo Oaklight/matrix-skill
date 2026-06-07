@@ -41,13 +41,17 @@ export PATH="$HOME/.local/bin:$PATH"  # ensure it's in PATH
 
 ## Auth & Config
 
-The skill expects two values — locate them from your environment:
+The skill expects two values. Prefer the standalone Matrix config path when available:
 
 ```bash
-# OpenClaw agents: token is typically in credentials
-jq -r '.accessToken' ~/.openclaw/credentials/matrix/credentials.json
+jq -r '.accessToken' ~/.config/matrix/credentials.json
+jq -r '.homeserver' ~/.config/matrix/config.json
+```
 
-# Homeserver URL from OpenClaw config
+OpenClaw agents may instead use their own config paths:
+
+```bash
+jq -r '.accessToken' ~/.openclaw/credentials/matrix/credentials.json
 jq -r '.channels.matrix.homeserver' ~/.openclaw/openclaw.json
 ```
 
