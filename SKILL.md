@@ -619,7 +619,7 @@ matrix_put() {
     if [ "$http_code" = "429" ]; then
       wait_ms=$(echo "$resp_body" | jq -r '.retry_after_ms // 2000')
       echo "  ⏳ rate limited, waiting ${wait_ms}ms (attempt $attempt/$max_retries)" >&2
-      sleep "$(echo "scale=1; $wait_ms / 1000 + 0.5" | bc)"
+      sleep "$(awk "BEGIN{printf \"%.1f\", $wait_ms/1000+0.5}")"
     else
       echo "$resp_body"
       return 0
