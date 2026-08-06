@@ -379,6 +379,63 @@ curl -s -X PUT \
   "$HS/_matrix/client/v3/rooms/$ENC/send/m.reaction/$TXN"
 ```
 
+## Edit a message (m.replace)
+
+To edit a previously sent message, send a new `m.room.message` event with `m.relates_to` containing `rel_type: "m.replace"` and the `event_id` of the original message. The new content goes inside `m.new_content`; the top-level `body` serves as a fallback for clients that don't support edits (prefix it with `* ` by convention):
+
+```bash
+TXN="edit-$(date +%s%N)"
+BODY=$(jq -n \
+  --arg eid "$ORIGINAL_EVENT_ID" \
+  --arg msg "corrected text" '{
+  msgtype: "m.text",
+  body: "* \($msg)",
+  "m.new_content": {
+    msgtype: "m.text",
+    body: $msg
+  },
+  "m.relates_to": {
+    rel_type: "m.replace",
+    event_id: $eid
+  }
+}')
+curl -s -X PUT \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "$BODY" \
+  "$HS/_matrix/client/v3/rooms/$ENC/send/m.room.message/$TXN"
+```
+
+To edit a message with HTML formatting, include `format` and `formatted_body` inside `m.new_content` (and in the top-level fallback):
+
+```bash
+BODY=$(jq -n \
+  --arg eid "$ORIGINAL_EVENT_ID" \
+  --arg msg "corrected **bold** text" \
+  --arg html "corrected <strong>bold</strong> text" '{
+  msgtype: "m.text",
+  body: "* \($msg)",
+  format: "org.matrix.custom.html",
+  formatted_body: "* \($html)",
+  "m.new_content": {
+    msgtype: "m.text",
+    body: $msg,
+    format: "org.matrix.custom.html",
+    formatted_body: $html
+  },
+  "m.relates_to": {
+    rel_type: "m.replace",
+    event_id: $eid
+  }
+}')
+```
+
+**Key points**:
+- You can only edit your own messages.
+- `m.new_content` holds the full replacement content — it completely replaces the original content.
+- The top-level `body` with the `* ` prefix is a **fallback** for clients that don't understand `m.replace`.
+- Each edit is a new event; the original `event_id` remains stable. Clients aggregate edits by `m.replace` relation.
+
 ## Redact (delete) a message
 
 ```bash
