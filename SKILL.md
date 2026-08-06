@@ -220,6 +220,33 @@ curl -s -X POST \
   "$HS/_matrix/client/v3/rooms/$ENC/ban"
 ```
 
+## Leave / forget a room
+
+Leave a room you're currently in:
+
+```bash
+curl -s -X POST \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{}' \
+  "$HS/_matrix/client/v3/rooms/$ENC/leave"
+```
+
+After leaving, the room still appears in your room list (as a "left" room) and history is accessible. To **permanently remove** it from your room list, call forget:
+
+```bash
+curl -s -X POST \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{}' \
+  "$HS/_matrix/client/v3/rooms/$ENC/forget"
+```
+
+**Key points**:
+- You must **leave** before you can **forget** — calling forget on a room you're still in will fail.
+- Forgetting is irreversible: the server discards your membership record. You can rejoin (if the room allows it), but previous history may not be visible depending on the room's `history_visibility` setting.
+- To leave and forget in one go: leave first, then forget.
+
 ## Room state
 
 ### Get room name
