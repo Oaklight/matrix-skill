@@ -471,6 +471,91 @@ BODY=$(jq -n \
 - The top-level `body` with the `* ` prefix is a **fallback** for clients that don't understand `m.replace`.
 - Each edit is a new event; the original `event_id` remains stable. Clients aggregate edits by `m.replace` relation.
 
+## Upload and send media
+
+Sending images, files, audio, or video is a two-step process: **upload** the file to the homeserver's content repository, then **send** a message referencing the returned `mxc://` URI.
+
+### Step 1 — Upload
+
+```bash
+# Upload a file and capture the mxc:// URI
+MXC=$(curl -s -X POST \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: image/png" \
+  --data-binary @/path/to/image.png \
+  "$HS/_matrix/media/v3/upload?filename=image.png" \
+  | jq -r '.content_uri')
+echo "$MXC"   # e.g., mxc://example.com/AbCdEfG
+```
+
+Set `Content-Type` to the file's actual MIME type (e.g., `image/jpeg`, `application/pdf`, `video/mp4`). The `filename` query parameter is optional but recommended — clients display it as the download name.
+
+### Step 2 — Send the media message
+
+Use the appropriate `msgtype` for the content:
+
+| Type | msgtype | Required fields |
+|------|---------|----------------|
+| Image | `m.image` | `url` |
+| File | `m.file` | `url`, `filename` |
+| Video | `m.video` | `url` |
+| Audio | `m.audio` | `url` |
+
+```bash
+# Send an image
+TXN="media-$(date +%s%N)"
+BODY=$(jq -n --arg mxc "$MXC" '{
+  msgtype: "m.image",
+  body: "image.png",
+  url: $mxc,
+  info: {
+    mimetype: "image/png"
+  }
+}')
+curl -s -X PUT \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d "$BODY" \
+  "$HS/_matrix/client/v3/rooms/$ENC/send/m.room.message/$TXN"
+```
+
+The `body` field is the **text fallback** (typically the filename). The optional `info` object can include `mimetype`, `size` (bytes), `w` and `h` (pixels, for images/video), and `duration` (ms, for audio/video).
+
+```bash
+# Send a generic file
+BODY=$(jq -n --arg mxc "$MXC" '{
+  msgtype: "m.file",
+  body: "report.pdf",
+  url: $mxc,
+  filename: "report.pdf",
+  info: {
+    mimetype: "application/pdf",
+    size: 204800
+  }
+}')
+```
+
+### Download media
+
+Convert an `mxc://` URI to an HTTP download URL:
+
+```bash
+# mxc://example.com/AbCdEfG → server_name=example.com, media_id=AbCdEfG
+SERVER="example.com"
+MEDIA_ID="AbCdEfG"
+curl -s -o output.png \
+  -H "Authorization: Bearer $TOKEN" \
+  "$HS/_matrix/media/v3/download/$SERVER/$MEDIA_ID"
+```
+
+For thumbnails (images only):
+
+```bash
+curl -s -o thumb.png \
+  -H "Authorization: Bearer $TOKEN" \
+  "$HS/_matrix/media/v3/thumbnail/$SERVER/$MEDIA_ID?width=320&height=240&method=scale"
+```
+
 ## Redact (delete) a message
 
 ```bash
