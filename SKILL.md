@@ -361,6 +361,15 @@ BODY=$(jq -n \
 }')
 ```
 
+### `is_falling_back` explained
+
+The `is_falling_back` boolean tells clients how to interpret the `m.in_reply_to` field:
+
+- **`is_falling_back: true`** — the `m.in_reply_to` is **not** a genuine reply; it exists only as a fallback so that clients without thread support still render the message as a reply to the thread root. This is the normal case when simply posting to a thread without replying to a specific message within it.
+- **`is_falling_back: false`** — the `m.in_reply_to` is a **genuine reply** to a specific message inside the thread. Thread-aware clients show it as an in-thread reply; non-thread-aware clients show it as a regular reply.
+
+Rule of thumb: set `is_falling_back: true` when `m.in_reply_to.event_id` equals the thread root (no specific reply target), and `false` when it points to a different message within the thread.
+
 ## Reactions
 
 ```bash
